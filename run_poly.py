@@ -9,8 +9,8 @@ from typing import BinaryIO
 
 HEADER_BIN = "header.bin"
 PointType = tuple[float, float]
-
-poly3 = [
+PolyType = list[list[tuple[float, float]]]
+poly3: PolyType = [
     [(1.0, 2.5), (3.5, 4.0), (2.5, 1.5)],
     [(7.0, 1.2), (5.1, 3.0), (0.5, 7.5), (0.8, 9.0)],
     [(3.4, 5.3), (1.2, 0.5), (4.6, 9.2)],
@@ -25,9 +25,7 @@ class Point:
     y: float
 
 
-def find_bounding_box(
-    poly: list[list[tuple[float, float]]],
-) -> tuple[float, float, float, float]:
+def find_bounding_box(poly: PolyType) -> tuple[float, float, float, float]:
     """
     >>> find_bounding_box (poly3)
     (0.5, 0.5, 7.0, 9.2)
@@ -80,15 +78,15 @@ def read_header(f: BinaryIO) -> PolyHeader:
 
 def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
     points: list[tuple[float, float]] = []
-    for _ in range(struct.unpack("<i", f.read(4))):
+    for _ in range(struct.unpack("<i", f.read(4))[0]):
         points.append(point_struct.unpack(f.read(point_struct.size)))
     return points
 
 
-def read_poly(filename=HEADER_BIN):
+def read_poly(filename=HEADER_BIN) -> PolyType:
     with open(filename, "rb") as f:
         ph: PolyHeader = read_header(f)
-        polygons = []
+        polygons: PolyType = []
         for _ in range(ph.npoly):
             sp = read_subpoly(f)
             polygons.append(sp)
