@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import itertools
 import struct
 from typing import BinaryIO
+from typing import TypeAlias, List
 
 poly3 = [
     [(1.0, 2.5), (3.5, 4.0), (2.5, 1.5)],
@@ -53,10 +54,25 @@ def write_header(f: BinaryIO, ph: PolyHeader) -> BinaryIO:
     return f
 
 
-def write_poly():
-    with open() as f:
+HEADER_BIN = "header.bin"
+
+PointType = tuple[float, float]
+PolyType: TypeAlias = "PolyType | List[PolyType]"
+
+
+def write_poly(filename=HEADER_BIN):
+    with open(filename, "wb") as f:
         ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
         write_header(f, ph)
+        polygons = poly3
+        poly: list[PointType]
+        for poly in polygons:
+            point_struct = struct.Struct("<dd")
+            sz = point_struct.size
+            f.write(struct.pack("<i", sz * len(poly) + 4))
+            pt: PointType
+            for pt in poly:
+                f.write(point_struct.pack(*pt))
 
 
 def read_poly():
