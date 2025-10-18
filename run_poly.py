@@ -3,6 +3,8 @@
 # PYTHON_ARGCOMPLETE_OK
 from dataclasses import dataclass
 import itertools
+import struct
+from typing import BinaryIO
 
 poly3 = [
     [(1.0, 2.5), (3.5, 4.0), (2.5, 1.5)],
@@ -30,6 +32,27 @@ def find_bounding_box(
     max_x = max((x for x, _ in flat))
     max_y = max((y for _, y in flat))
     return min_x, min_y, max_x, max_y
+
+
+@dataclass
+class PolyHeader:
+    code: str  # "file code"
+    min_x: float
+    min_y: float
+    max_x: float
+    max_y: float
+    npoly: int  # number of polygons
+
+
+def write_header(f: BinaryIO, ph: PolyHeader = None) -> BinaryIO:
+    if ph is None:
+        ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
+    f.write(
+        struct.pack(
+            "<iddddi", ph.file_code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly
+        )
+    )
+    return f
 
 
 def write_poly():
