@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from __future__ import annotations
 from dataclasses import dataclass
 import itertools
 import struct
-from typing import BinaryIO
-from typing import TypeAlias, List
+from typing import BinaryIO, Never
+
+HEADER_BIN = "header.bin"
+PointType = tuple[float, float]
 
 poly3 = [
     [(1.0, 2.5), (3.5, 4.0), (2.5, 1.5)],
@@ -37,7 +40,7 @@ def find_bounding_box(
 
 @dataclass
 class PolyHeader:
-    code: str  # "file code"
+    code: int  # "file code"
     min_x: float
     min_y: float
     max_x: float
@@ -48,19 +51,13 @@ class PolyHeader:
 def write_header(f: BinaryIO, ph: PolyHeader) -> BinaryIO:
     f.write(
         struct.pack(
-            "<iddddi", ph.file_code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly
+            "<iddddi", ph.code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly
         )
     )
     return f
 
 
-HEADER_BIN = "header.bin"
-
-PointType = tuple[float, float]
-PolyType: TypeAlias = "PolyType | List[PolyType]"
-
-
-def write_poly(filename=HEADER_BIN):
+def write_poly(filename=HEADER_BIN) -> None:
     with open(filename, "wb") as f:
         ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
         write_header(f, ph)
