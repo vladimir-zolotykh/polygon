@@ -44,9 +44,7 @@ class PolyHeader:
     npoly: int  # number of polygons
 
 
-def write_header(f: BinaryIO, ph: PolyHeader = None) -> BinaryIO:
-    if ph is None:
-        ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
+def write_header(f: BinaryIO, ph: PolyHeader) -> BinaryIO:
     f.write(
         struct.pack(
             "<iddddi", ph.file_code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly
@@ -56,7 +54,9 @@ def write_header(f: BinaryIO, ph: PolyHeader = None) -> BinaryIO:
 
 
 def write_poly():
-    pass
+    with open() as f:
+        ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
+        write_header(f, ph)
 
 
 def read_poly():
