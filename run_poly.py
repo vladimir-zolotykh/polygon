@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import itertools
 import struct
-from typing import BinaryIO, Never
+from typing import BinaryIO
 
 HEADER_BIN = "header.bin"
 PointType = tuple[float, float]
@@ -15,6 +15,8 @@ poly3 = [
     [(7.0, 1.2), (5.1, 3.0), (0.5, 7.5), (0.8, 9.0)],
     [(3.4, 5.3), (1.2, 0.5), (4.6, 9.2)],
 ]
+point_struct = struct.Struct("<dd")
+header_struct = struct.Struct("<iddddi")
 
 
 @dataclass
@@ -50,9 +52,7 @@ class PolyHeader:
 
 def write_header(f: BinaryIO, ph: PolyHeader) -> BinaryIO:
     f.write(
-        struct.pack(
-            "<iddddi", ph.code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly
-        )
+        header_struct.pack(ph.code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly)
     )
     return f
 
@@ -72,11 +72,11 @@ def write_poly(filename=HEADER_BIN) -> None:
                 f.write(point_struct.pack(*pt))
 
 
-HEADER_SIZE = struct.calcsize("<iddddi")
+HEADER_SIZE = header_struct.size
 
 
 def read_header(f: BinaryIO) -> PolyHeader:
-    return PolyHeader(*struct.unpack("<iddddi", f.read(HEADER_SIZE)))
+    return PolyHeader(*header_struct.unpack(f.read(HEADER_SIZE)))
 
 
 def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
