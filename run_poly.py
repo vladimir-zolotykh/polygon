@@ -64,7 +64,6 @@ def write_poly(filename=HEADER_BIN) -> None:
         polygons = poly3
         poly: list[PointType]
         for poly in polygons:
-            point_struct = struct.Struct("<dd")
             sz = point_struct.size
             f.write(struct.pack("<i", sz * len(poly) + 4))
             pt: PointType
@@ -82,7 +81,7 @@ def read_header(f: BinaryIO) -> PolyHeader:
 def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
     points: list[tuple[float, float]] = []
     for _ in range(struct.unpack("<i", f.read(4))):
-        points.append(struct.unpack("<dd", f.read(struct.calcsize("<dd"))))
+        points.append(point_struct.unpack(f.read(point_struct.size)))
     return points
 
 
