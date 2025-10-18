@@ -72,8 +72,28 @@ def write_poly(filename=HEADER_BIN) -> None:
                 f.write(point_struct.pack(*pt))
 
 
-def read_poly():
-    pass
+HEADER_SIZE = struct.calcsize("<iddddi")
+
+
+def read_header(f: BinaryIO) -> PolyHeader:
+    return PolyHeader(*struct.unpack("<iddddi", f.read(HEADER_SIZE)))
+
+
+def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
+    points: list[tuple[float, float]] = []
+    for _ in range(struct.unpack("<i", f.read(4))):
+        points.append(struct.unpack("<dd", f.read(struct.calcsize("<dd"))))
+    return points
+
+
+def read_poly(filename=HEADER_BIN):
+    with open(filename, "rb") as f:
+        ph: PolyHeader = read_header(f)
+        polygons = []
+        for _ in range(ph.npoly):
+            sp = read_subpoly(f)
+            polygons.append(sp)
+        return polygons
 
 
 if __name__ == "__main__":
