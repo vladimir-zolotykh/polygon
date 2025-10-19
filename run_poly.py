@@ -9,7 +9,7 @@ from typing import BinaryIO
 
 HEADER_BIN = "header.bin"
 PointType = tuple[float, float]
-PolyType = list[list[tuple[float, float]]]
+PolyType = list[list[PointType]]
 poly3: PolyType = [
     [(1.0, 2.5), (3.5, 4.0), (2.5, 1.5)],
     [(7.0, 1.2), (5.1, 3.0), (0.5, 7.5), (0.8, 9.0)],
