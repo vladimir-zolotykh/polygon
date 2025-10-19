@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from __future__ import annotations
+# from __future__ import annotations
+import os
 from dataclasses import dataclass
 import itertools
 import struct
 from typing import BinaryIO
+import unittest
 
 HEADER_BIN = "header.bin"
+POLYGON_BIN = "polygon.bin"
 PointType = tuple[float, float]
 PolyType = list[list[PointType]]
 poly3: PolyType = [
@@ -48,25 +51,27 @@ class PolyHeader:
     npoly: int  # number of polygons
 
 
-def write_header(f: BinaryIO, ph: PolyHeader) -> BinaryIO:
+def _make_default_header(poly=poly3) -> PolyHeader:
+    return PolyHeader(0x1234, *find_bounding_box(poly), len(poly))
+
+
+def write_header(f: BinaryIO, ph: PolyHeader = _make_default_header()) -> BinaryIO:
     f.write(
         header_struct.pack(ph.code, ph.min_x, ph.min_y, ph.max_x, ph.max_y, ph.npoly)
     )
     return f
 
 
-def write_poly(filename=HEADER_BIN) -> None:
-    with open(filename, "wb") as f:
-        ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
-        write_header(f, ph)
-        polygons = poly3
-        poly: list[PointType]
-        for poly in polygons:
-            sz = point_struct.size
-            f.write(struct.pack("<i", sz * len(poly) + 4))
-            pt: PointType
-            for pt in poly:
-                f.write(point_struct.pack(*pt))
+def write_poly(f: BinaryIO) -> None:
+    ph = PolyHeader(0x1234, *find_bounding_box(poly3), len(poly3))
+    write_header(f, ph)
+    polygons = poly3
+    poly: list[PointType]
+    for poly in polygons:
+        f.write(struct.pack("<i", len(poly)))
+        pt: PointType
+        for pt in poly:
+            f.write(point_struct.pack(*pt))
 
 
 HEADER_SIZE = header_struct.size
@@ -78,7 +83,8 @@ def read_header(f: BinaryIO) -> PolyHeader:
 
 def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
     points: list[tuple[float, float]] = []
-    for _ in range(struct.unpack("<i", f.read(4))[0]):
+    nsub = struct.unpack("<i", f.read(4))[0]
+    for _ in range(nsub):
         points.append(point_struct.unpack(f.read(point_struct.size)))
     return points
 
@@ -93,7 +99,24 @@ def read_poly(filename=HEADER_BIN) -> PolyType:
         return polygons
 
 
-if __name__ == "__main__":
-    import doctest
+class TestPoly(unittest.TestCase):
+    def setUp(self):
+        with open(HEADER_BIN, "wb") as f:
+            write_header(f, _make_default_header())
+        with open(POLYGON_BIN, "wb") as f:
+            write_poly(f)
 
-    doctest.testmod()
+    def tearUp(self):
+        os.remove(HEADER_BIN)
+        os.remove(POLYGON_BIN)
+
+    def test_01_read_header(self):
+        with open(HEADER_BIN, "rb") as f:
+            self.assertEqual(read_header(f), _make_default_header())
+
+    def test_02_read_poly(self):
+        self.assertEqual(read_poly(), poly3)
+
+
+if __name__ == "__main__":
+    unittest.main()
