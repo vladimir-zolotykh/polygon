@@ -89,14 +89,13 @@ def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
     return points
 
 
-def read_poly(filename=HEADER_BIN) -> PolyType:
-    with open(filename, "rb") as f:
-        ph: PolyHeader = read_header(f)
-        polygons: PolyType = []
-        for _ in range(ph.npoly):
-            sp = read_subpoly(f)
-            polygons.append(sp)
-        return polygons
+def read_poly(f: BinaryIO) -> PolyType:
+    ph: PolyHeader = read_header(f)
+    polygons: PolyType = []
+    for _ in range(ph.npoly):
+        sp = read_subpoly(f)
+        polygons.append(sp)
+    return polygons
 
 
 class TestPoly(unittest.TestCase):
@@ -115,7 +114,8 @@ class TestPoly(unittest.TestCase):
             self.assertEqual(read_header(f), _make_default_header())
 
     def test_02_read_poly(self):
-        self.assertEqual(read_poly(), poly3)
+        with open(POLYGON_BIN, "rb") as f:
+            self.assertEqual(read_poly(f), poly3)
 
 
 if __name__ == "__main__":
