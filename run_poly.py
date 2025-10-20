@@ -105,7 +105,7 @@ class TestPoly(unittest.TestCase):
         with open(POLYGON_BIN, "wb") as f:
             write_poly(f)
 
-    def tearUp(self):
+    def tearDown(self):
         os.remove(HEADER_BIN)
         os.remove(POLYGON_BIN)
 
