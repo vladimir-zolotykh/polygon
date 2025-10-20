@@ -14,7 +14,9 @@ class Chunk:
         if instance is None:
             return self
         tup = struct.unpack_from(
-            self.fmt, instance._buffer + self.offset
+            # fmt: off
+            self.format, instance._buffer[self.offset:]
+            # fmt: on
         )  # always a tupple
         if len(tup) == 1:
             return tup[0]
@@ -27,7 +29,7 @@ class MetaHeader(type):
         offset = 0
         byte_code = ""
         for format, field_name in cls._fields_:
-            if format[0] in ():
+            if format[0] in ("<", ">", "!", "@"):
                 byte_code = format[0]
                 format = format[1:]
             format = byte_code + format
@@ -44,15 +46,16 @@ class HeaderBuffer:
     def from_file(cls, f: BinaryIO):
         return cls(f.read(cls.size))
 
+    def as_tuple(self):
+        return (self.code, self.min_x, self.min_y, self.max_x, self.max_y, self.npoly)
+
 
 class PolyHeader(HeaderBuffer, metaclass=MetaHeader):
     _fields_ = [
         ("<i", "code"),
-        # code = Chunk("<i", 0)
-        ("dd", "min_x"),
-        # code = Chunk("dd", 4)
-        ("dd", "min_y"),
-        ("dd", "max_x"),
-        ("dd", "max_y"),
+        ("d", "min_x"),
+        ("d", "min_y"),
+        ("d", "max_x"),
+        ("d", "max_y"),
         ("i", "npoly"),
     ]
