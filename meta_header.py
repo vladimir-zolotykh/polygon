@@ -47,7 +47,7 @@ class HeaderBuffer:
         return cls(f.read(cls.size))
 
     def as_tuple(self):
-        return (self.code, self.min_x, self.min_y, self.max_x, self.max_y, self.npoly)
+        return tuple(getattr(self, fn) for _, fn in self._fields_)
 
 
 class PolyHeader(HeaderBuffer, metaclass=MetaHeader):

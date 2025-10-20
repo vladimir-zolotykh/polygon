@@ -3,7 +3,7 @@
 # PYTHON_ARGCOMPLETE_OK
 # from __future__ import annotations
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 import itertools
 import struct
 from typing import BinaryIO
@@ -113,7 +113,7 @@ class TestPoly(unittest.TestCase):
     def test_10_read_meta_header(self):
         with open(HEADER_BIN, "rb") as f:
             mh: MH.PolyHeader = MH.PolyHeader.from_file(f)
-            self.assertEqual(mh.as_tuple(), _make_default_header())
+            self.assertEqual(mh.as_tuple(), astuple(_make_default_header()))
 
     def test_30_read_header(self):
         with open(HEADER_BIN, "rb") as f:
