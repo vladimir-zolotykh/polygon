@@ -8,6 +8,7 @@ import itertools
 import struct
 from typing import BinaryIO
 import unittest
+import meta_header as MH
 
 HEADER_BIN = "header.bin"
 POLYGON_BIN = "polygon.bin"
@@ -109,11 +110,16 @@ class TestPoly(unittest.TestCase):
         os.remove(HEADER_BIN)
         os.remove(POLYGON_BIN)
 
-    def test_01_read_header(self):
+    def test_10_read_meta_header(self):
+        with open(HEADER_BIN, "rb") as f:
+            mh: MH.PolyHeader = MH.PolyHeader.from_file(f)
+            self.assertEqual(mh, _make_default_header())
+
+    def test_30_read_header(self):
         with open(HEADER_BIN, "rb") as f:
             self.assertEqual(read_header(f), _make_default_header())
 
-    def test_02_read_poly(self):
+    def test_40_read_poly(self):
         with open(POLYGON_BIN, "rb") as f:
             self.assertEqual(read_poly(f), poly3)
 
