@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+from typing import BinaryIO, Self
 import struct
 from meta_header import Chunk
 
@@ -26,7 +27,7 @@ class NestedType:
         return val
 
 
-class NestedHeader(type):
+class NestedMeta(type):
     def __init__(cls, clsname, bases, clsdict):
         offset: int = 0
         for nested_type, field_name in cls._fields_:
@@ -40,3 +41,29 @@ class NestedHeader(type):
             else:
                 setattr(cls, field_name, NestedType(nested_type, offset))
                 offset += nested_type.size
+        setattr(cls, "size", offset)
+
+
+class NestedBuffer(metaclass=NestedMeta):
+    def __init__(self, buffer):
+        self._buffer = memoryview(buffer)
+
+    @classmethod
+    def from_file(cls, f: BinaryIO) -> Self:
+        return cls(cls(f.read(cls.size)))
+
+
+class Point(NestedBuffer):
+    _fields_ = [
+        ("<d", "x"),
+        ("d", "y"),
+    ]
+
+
+class PolyHeader(NestedBuffer):
+    _fields_ = [
+        ("<i", "code"),
+        (Point, "xy1"),
+        (Point, "xy2"),
+        ("i", "npoly"),
+    ]
