@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+import struct
+from meta_header import Chunk
 
 
 class NestedType:
@@ -22,3 +24,19 @@ class NestedType:
         val = self.nested_type(buf)
         setattr(instance, self.name, self.nested_type(buf))
         return val
+
+
+class NestedHeader(type):
+    def __init__(cls, clsname, bases, clsdict):
+        offset: int = 0
+        for nested_type, field_name in cls._fields_:
+            if isinstance(nested_type, str):
+                format = nested_type
+                # fmt: off
+                dat = cls._buffer[offset:offset + struct.calcsize(format)]
+                # fmt: on
+                setattr(cls, field_name, Chunk(format, dat))
+                offset += struct.calcsize(format)
+            else:
+                setattr(cls, field_name, NestedType(nested_type, offset))
+                offset += nested_type.size
