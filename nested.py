@@ -29,10 +29,16 @@ class NestedType:
 
 class NestedMeta(type):
     def __init__(cls, clsname, bases, clsdict):
+        byte_code = ""
         offset: int = 0
         for nested_type, field_name in cls._fields_:
             if isinstance(nested_type, str):
                 format = nested_type
+                if format[0] in ("<", ">", "!", "@"):
+                    byte_code = format[0]
+                    format = format[1:]
+                format = byte_code + format
+
                 # fmt: off
                 dat = cls._buffer[offset:offset + struct.calcsize(format)]
                 # fmt: on
