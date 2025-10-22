@@ -111,7 +111,7 @@ class TestPoly(unittest.TestCase):
         os.remove(HEADER_BIN)
         os.remove(POLYGON_BIN)
 
-    def test_10_read_meta_header(self):
+    def test_10_read_nested_header(self):
         with open(HEADER_BIN, "rb") as f:
             nh: NT.PolyHeader = NT.PolyHeader.from_file(f)
             res = nh.code, *nh.xy1.as_tuple(), *nh.xy2.as_tuple(), nh.npoly
