@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
-from typing import BinaryIO, Self
+from typing import BinaryIO, Self, Iterator, Any
 import struct
 from meta_header import Chunk
 
@@ -73,3 +73,27 @@ class PolyHeader(NestedBuffer):
         (Point, "xy2"),
         ("i", "npoly"),
     ]
+
+
+class SizedRecord:
+    def __init__(self, bytedata):
+        self._buffer = memoryview(bytedata)
+
+    def iter_as(
+        self,
+        record_type,
+    ) -> Iterator[tuple[Any, ...] | NestedBuffer]:
+        if isinstance(record_type, str):
+            format: str = record_type
+            u = struct.Struct(format)
+            for off in range(0, len(self._buffer), u.size):
+                # fmt: off
+                buf = self._buffer[off:off + u.size]
+                # fmt: on
+                yield u.unpack_from(buf)
+        elif isinstance(record_type, NestedBuffer):
+            for off in range(0, len(self._buffer), record_type.size):
+                # fmt: off
+                buf = self._buffer[off:off + record_type.size]
+                # fmt: on
+                yield record_type(buf)
