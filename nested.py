@@ -79,6 +79,12 @@ class SizedRecord:
     def __init__(self, bytedata):
         self._buffer = memoryview(bytedata)
 
+    @classmethod
+    def from_file(cls, f: BinaryIO):
+        size = struct.unpack("<i", f.read(4))
+        buf = f.read(size)
+        return cls(buf)
+
     def iter_as(
         self,
         record_type,
