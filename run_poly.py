@@ -125,6 +125,10 @@ class TestPoly(unittest.TestCase):
         with open(POLYGON_BIN, "rb") as f:
             self.assertEqual(read_poly(f), poly3)
 
+    def test_50_read_poly_nested(self):
+        with open(POLYGON_BIN, "rb") as f:
+            pass
+
 
 if __name__ == "__main__":
     unittest.main()
