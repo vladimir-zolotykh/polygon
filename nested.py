@@ -9,10 +9,8 @@ from meta_header import Chunk
 class NestedType:
     """Nested chunk-struct"""
 
-    def __set_name__(self, owner, name):
-        self.name = "_" + name
-
-    def __init__(self, nested_type, offset):
+    def __init__(self, name, nested_type, offset):
+        self.name = name  # owner attr name
         self.nested_type = nested_type
         self.offset = offset
 
@@ -42,7 +40,7 @@ class NestedMeta(type):
                 setattr(cls, field_name, Chunk(format, offset))
                 offset += struct.calcsize(format)
             else:
-                setattr(cls, field_name, NestedType(nested_type, offset))
+                setattr(cls, field_name, NestedType(field_name, nested_type, offset))
                 offset += nested_type.size
         setattr(cls, "size", offset)
 

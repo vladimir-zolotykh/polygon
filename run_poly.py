@@ -114,7 +114,8 @@ class TestPoly(unittest.TestCase):
     def test_10_read_meta_header(self):
         with open(HEADER_BIN, "rb") as f:
             nh: NT.PolyHeader = NT.PolyHeader.from_file(f)
-            self.assertEqual(nh.as_tuple(), astuple(_make_default_header()))
+            res = nh.code, *nh.xy1.as_tuple(), *nh.xy2.as_tuple(), nh.npoly
+            self.assertEqual(res, astuple(_make_default_header()))
 
     def test_30_read_header(self):
         with open(HEADER_BIN, "rb") as f:
