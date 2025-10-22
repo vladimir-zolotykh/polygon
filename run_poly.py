@@ -9,6 +9,7 @@ import struct
 from typing import BinaryIO
 import unittest
 import meta_header as MH
+import nested as NT
 
 HEADER_BIN = "header.bin"
 POLYGON_BIN = "polygon.bin"
@@ -112,8 +113,8 @@ class TestPoly(unittest.TestCase):
 
     def test_10_read_meta_header(self):
         with open(HEADER_BIN, "rb") as f:
-            mh: MH.PolyHeader = MH.PolyHeader.from_file(f)
-            self.assertEqual(mh.as_tuple(), astuple(_make_default_header()))
+            nh: NT.PolyHeader = NT.PolyHeader.from_file(f)
+            self.assertEqual(nh.as_tuple(), astuple(_make_default_header()))
 
     def test_30_read_header(self):
         with open(HEADER_BIN, "rb") as f:

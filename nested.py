@@ -9,7 +9,7 @@ from meta_header import Chunk
 class NestedType:
     """Nested chunk-struct"""
 
-    def __get_name__(self, owner, name):
+    def __set_name__(self, owner, name):
         self.name = "_" + name
 
     def __init__(self, nested_type, offset):
@@ -39,10 +39,7 @@ class NestedMeta(type):
                     format = format[1:]
                 format = byte_code + format
 
-                # fmt: off
-                dat = cls._buffer[offset:offset + struct.calcsize(format)]
-                # fmt: on
-                setattr(cls, field_name, Chunk(format, dat))
+                setattr(cls, field_name, Chunk(format, offset))
                 offset += struct.calcsize(format)
             else:
                 setattr(cls, field_name, NestedType(nested_type, offset))
@@ -50,23 +47,26 @@ class NestedMeta(type):
         setattr(cls, "size", offset)
 
 
-class NestedBuffer(metaclass=NestedMeta):
+class NestedBuffer:
     def __init__(self, buffer):
         self._buffer = memoryview(buffer)
 
     @classmethod
     def from_file(cls, f: BinaryIO) -> Self:
-        return cls(cls(f.read(cls.size)))
+        return cls(f.read(cls.size))
+
+    def as_tuple(self):
+        return tuple(getattr(self, fn) for _, fn in self._fields_)
 
 
-class Point(NestedBuffer):
+class Point(NestedBuffer, metaclass=NestedMeta):
     _fields_ = [
         ("<d", "x"),
         ("d", "y"),
     ]
 
 
-class PolyHeader(NestedBuffer):
+class PolyHeader(NestedBuffer, metaclass=NestedMeta):
     _fields_ = [
         ("<i", "code"),
         (Point, "xy1"),
