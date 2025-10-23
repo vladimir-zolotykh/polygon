@@ -95,9 +95,11 @@ class SizedRecord:
                 buf = self._buffer[off:off + u.size]
                 # fmt: on
                 yield u.unpack_from(buf)
-        elif isinstance(record_type, NestedBuffer):
+        elif isinstance(record_type, type) and issubclass(record_type, NestedBuffer):
             for off in range(0, len(self._buffer), record_type.size):
                 # fmt: off
                 buf = self._buffer[off:off + record_type.size]
                 # fmt: on
                 yield record_type(buf)
+        else:
+            raise TypeError(f"{record_type}: Expected str or NestedBuffer")
