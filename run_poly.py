@@ -83,20 +83,13 @@ def read_header(f: BinaryIO) -> PolyHeader:
     return PolyHeader(*header_struct.unpack(f.read(HEADER_SIZE)))
 
 
-def read_subpoly(f: BinaryIO) -> list[tuple[float, float]]:
-    points: list[tuple[float, float]] = []
-    nsub = struct.unpack("<i", f.read(4))[0]
-    for _ in range(nsub):
-        points.append(point_struct.unpack(f.read(point_struct.size)))
-    return points
-
-
 def read_poly(f: BinaryIO) -> PolyType:
-    ph: PolyHeader = read_header(f)
+    ph: NT.PolyHeader = NT.PolyHeader.from_file(f)
     polygons: PolyType = []
     for _ in range(ph.npoly):
-        sp = read_subpoly(f)
-        polygons.append(sp)
+        points: list[NT.Point] = []
+        points = list(NT.SizedRecord.from_file(f).iter_as(NT.Points))
+        polygons.append(points)
     return polygons
 
 
@@ -127,7 +120,7 @@ class TestPoly(unittest.TestCase):
 
     def test_50_read_poly_nested(self):
         with open(POLYGON_BIN, "rb") as f:
-            pass
+            self.assertEqual(read_poly(f), poly3)
 
 
 if __name__ == "__main__":
