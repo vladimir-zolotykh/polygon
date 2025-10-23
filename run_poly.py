@@ -89,7 +89,7 @@ def read_poly(f: BinaryIO) -> PolyType:
     for i in range(ph.npoly):
         points: list[NT.Point] = []
         for pt in NT.SizedRecord.from_file(f).iter_as(NT.Point):
-            points.append(pt)
+            points.append(pt.as_tuple())
         polygons.append(points)
     return polygons
 
