@@ -79,8 +79,8 @@ class SizedRecord:
 
     @classmethod
     def from_file(cls, f: BinaryIO):
-        nbytes = struct.unpack("<i", f.read(4))[0]
-        buf = f.read(nbytes)
+        npoints = struct.unpack("<i", f.read(4))[0]
+        buf = f.read(Point.size * npoints)
         return cls(buf)
 
     def iter_as(
