@@ -89,7 +89,8 @@ def read_poly(f: BinaryIO) -> PolyType:
     for i in range(ph.npoly):
         points: list[NT.Point] = []
         for pt in NT.SizedRecord.from_file(f).iter_as(NT.Point):
-            points.append(pt.as_tuple())
+            # points.append(pt.as_tuple())
+            points.append(NT.as_tuple(pt))
         polygons.append(points)
     return polygons
 
@@ -108,7 +109,7 @@ class TestPoly(unittest.TestCase):
     def test_10_read_nested_header(self):
         with open(HEADER_BIN, "rb") as f:
             nh: NT.PolyHeader = NT.PolyHeader.from_file(f)
-            res = nh.code, *nh.xy1.as_tuple(), *nh.xy2.as_tuple(), nh.npoly
+            res = nh.code, *NT.as_tuple(nh.xy1), *NT.as_tuple(nh.xy2), nh.npoly
             self.assertEqual(res, astuple(_make_default_header()))
 
     def test_30_read_header(self):

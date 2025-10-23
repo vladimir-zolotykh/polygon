@@ -53,8 +53,10 @@ class NestedBuffer:
     def from_file(cls, f: BinaryIO) -> Self:
         return cls(f.read(cls.size))
 
-    def as_tuple(self):
-        return tuple(getattr(self, fn) for _, fn in self._fields_)
+
+def as_tuple(nested_buffer: NestedBuffer) -> tuple[Any, ...]:
+    nb = nested_buffer
+    return tuple(getattr(nb, fn) for _, fn in nb._fields_)
 
 
 class Point(NestedBuffer, metaclass=NestedMeta):
